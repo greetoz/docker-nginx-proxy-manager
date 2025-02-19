@@ -18,6 +18,7 @@ ARG BCRYPT_TOOL_VERSION=1.1.2
 ARG OPENRESTY_URL=https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
 ARG NGINX_PROXY_MANAGER_URL=https://github.com/jc21/nginx-proxy-manager/archive/v${NGINX_PROXY_MANAGER_VERSION}.tar.gz
 ARG NGINX_HTTP_GEOIP2_MODULE_URL=https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_VERSION}.tar.gz
+ARG NGINX_HTTP_NTLM_MODULE_URL=https://github.com/gabihodoroaga/nginx-ntlm-module/archive/refs/tags/v1.19.3-beta.1.tar.gz
 ARG LIBMAXMINDDB_URL=https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/libmaxminddb-${LIBMAXMINDDB_VERSION}.tar.gz
 
 # Get Dockerfile cross-compilation helpers.
@@ -41,7 +42,7 @@ ARG NGINX_PROXY_MANAGER_VERSION
 ARG NGINX_PROXY_MANAGER_URL
 COPY --from=xx / /
 COPY src/nginx-proxy-manager /build
-RUN /build/build.sh "$NGINX_PROXY_MANAGER_VERSION" "$NGINX_PROXY_MANAGER_URL"
+RUN /build/build.sh "$NGINX_PROXY_MANAGER_VERSION" "$NGINX_PROXY_MANAGER_URL" "NGINX_HTTP_NTLM_MODULE_UR"
 
 # Build OpenResty (nginx).
 FROM --platform=$BUILDPLATFORM alpine:3.16 AS nginx
@@ -51,7 +52,7 @@ ARG NGINX_HTTP_GEOIP2_MODULE_URL
 ARG LIBMAXMINDDB_URL
 COPY --from=xx / /
 COPY src/openresty /build
-RUN /build/build.sh "$OPENRESTY_URL" "$NGINX_HTTP_GEOIP2_MODULE_URL" "$LIBMAXMINDDB_URL"
+RUN /build/build.sh "$OPENRESTY_URL" "$NGINX_HTTP_GEOIP2_MODULE_URL" "NGINX_HTTP_NTLM_MODULE_UR" "$LIBMAXMINDDB_URL"
 RUN xx-verify /tmp/openresty-install/usr/sbin/nginx
 
 # Build bcrypt-tool.
@@ -132,7 +133,7 @@ ENV \
 #   - 8080: HTTP traffic
 #   - 4443: HTTPs traffic
 #   - 8181: Management web interface
-EXPOSE 8080 4443 8181
+EXPOSE 80 443 81
 
 # Metadata.
 LABEL \
